@@ -14,7 +14,6 @@ __all__ = [
 ]
 
 import re
-import sys
 from itertools import count
 
 try:
@@ -26,31 +25,19 @@ REGISTRY_SOURCE_LM = 1
 REGISTRY_SOURCE_LM_WOW6432 = 2
 REGISTRY_SOURCE_CU = 3
 
-# Simple tests direcly on sys variables are necessary to please mypy
-if sys.platform == "win32":
-    if sys.version_info >= (3,):
-        import winreg
-    else:
-        import _winreg as winreg
-else:
-    def open_source():
-        pass
-
-# Prevents mypy (and python) from parsing further on non-win32 platforms
-assert sys.platform == "win32"
-
+_REG_SUB_KEY_NAME = r"Software\Python"
 _REG_KEY_INFO = {
     REGISTRY_SOURCE_LM: (
         winreg.HKEY_LOCAL_MACHINE,
-        r"Software\Python",
+        _REG_SUB_KEY_NAME,
         winreg.KEY_WOW64_64KEY,
     ),
     REGISTRY_SOURCE_LM_WOW6432: (
         winreg.HKEY_LOCAL_MACHINE,
-        r"Software\Python",
+        _REG_SUB_KEY_NAME,
         winreg.KEY_WOW64_32KEY,
     ),
-    REGISTRY_SOURCE_CU: (winreg.HKEY_CURRENT_USER, r"Software\Python", 0),
+    REGISTRY_SOURCE_CU: (winreg.HKEY_CURRENT_USER, _REG_SUB_KEY_NAME, 0),
 }
 
 
