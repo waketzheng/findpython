@@ -64,6 +64,12 @@ class PythonVersion:
             return self.executable
 
     @property
+    def implementation(self) -> str:
+        """Return the implementation of the python."""
+        script = "import platform; print(platform.python_implementation())"
+        return _run_script(str(self.executable), script).strip()
+
+    @property
     def name(self) -> str:
         """Return the name of the python."""
         return self.executable.name
@@ -125,6 +131,7 @@ class PythonVersion:
         dev: bool | None = None,
         name: str | None = None,
         architecture: str | None = None,
+        implementation: str | None = None,
     ) -> bool:
         """
         Return True if the python matches the provided criteria.
@@ -143,6 +150,8 @@ class PythonVersion:
         :type name: str
         :param architecture: The architecture of the python.
         :type architecture: str
+        :param implementation: The implementation of the python.
+        :type implementation: str
         :return: Whether the python matches the provided criteria.
         :rtype: bool
         """
@@ -160,19 +169,32 @@ class PythonVersion:
             return False
         if architecture is not None and self.architecture != architecture:
             return False
+        if (
+            implementation is not None
+            and self.implementation.lower() != implementation.lower()
+        ):
+            return False
         return True
 
     def __hash__(self) -> int:
         return hash(self.executable)
 
     def __repr__(self) -> str:
-        attrs = ("executable", "version", "architecture", "major", "minor", "patch")
+        attrs = (
+            "executable",
+            "version",
+            "architecture",
+            "implementation",
+            "major",
+            "minor",
+            "patch",
+        )
         return "<PythonVersion {}>".format(
             ", ".join(f"{attr}={getattr(self, attr)!r}" for attr in attrs)
         )
 
     def __str__(self) -> str:
-        return f"{self.name} {self.version} @ {self.executable}"
+        return f"{self.implementation:>9}@{self.version}: {self.executable}"
 
     def _get_version(self) -> Version:
         """Get the version of the python."""
@@ -196,7 +218,12 @@ class PythonVersion:
 
     def __lt__(self, other: PythonVersion) -> bool:
         """Sort by the version, then by length of the executable path."""
-        return (self.version, len(self.executable.as_posix())) < (
+        return (
+            self.version,
+            int(self.architecture.startswith("64bit")),
+            len(self.executable.as_posix()),
+        ) < (
             other.version,
+            int(other.architecture.startswith("64bit")),
             len(other.executable.as_posix()),
         )
