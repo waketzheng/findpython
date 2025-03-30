@@ -53,7 +53,7 @@ jobs:
       - name: Install packages
         run: pdm install
       - name: Run Pre-Commit Tests
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit-ci/lite-action@v1.1.0
       - name: Run Integration
         run: pdm run findpython --all -v
       - name: Run Tests
